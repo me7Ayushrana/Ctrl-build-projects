@@ -6,6 +6,7 @@ import { SmoothScrollProvider } from "@/components/providers/smooth-scroll-provi
 import { Navbar } from "@/components/layout/navbar";
 import { HackathonTimer } from "@/components/layout/hackathon-timer";
 import { NexusChat } from "@/components/ai/nexus-chat";
+import { SocialProvider } from "@/components/providers/social-context";
 
 const geistSans = Geist({
   variable: "--font-sans",
@@ -37,12 +38,14 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <SmoothScrollProvider>
-            <Navbar />
-            <main className="min-h-screen bg-grid">
-              {children}
-            </main>
-            <HackathonTimer />
-            <NexusChat />
+            <SocialProvider>
+              <Navbar />
+              <main className="min-h-screen bg-grid">
+                {children}
+              </main>
+              <HackathonTimer />
+              <NexusChat />
+            </SocialProvider>
           </SmoothScrollProvider>
         </ThemeProvider>
       </body>

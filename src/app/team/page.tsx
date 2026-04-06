@@ -3,24 +3,14 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-    Users,
-    Zap,
-    Trophy,
-    ShieldCheck,
-    AlertCircle,
-    UserPlus,
-    X,
-    MessageSquare,
-    Activity,
-    Brain,
-    Rocket,
-    LayoutDashboard,
-    Plus
+    Users, Zap, Trophy, ShieldCheck, AlertCircle, UserPlus, X, MessageSquare, Activity, Brain, Rocket, LayoutDashboard, Plus, Check, XCircle, Send
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, ResponsiveContainer } from "recharts";
+import { useSocial } from "@/components/providers/social-context";
+import { ActivityFeed } from "@/components/social/activity-feed";
 
 const MOCK_TEAM = [
     { id: "1", name: "Ayush Rana", role: "Frontend", style: "Builder", skills: ["React", "Three.js"], avatar: "A" },
@@ -43,9 +33,23 @@ const SKILL_GAPS = [
 
 export default function TeamPage() {
     const [team, setTeam] = useState(MOCK_TEAM);
+    const { pendingTeamInvites, acceptTeamInvite, rejectTeamInvite, toggleFriendsPanel, toggleChat } = useSocial();
 
     const removeMember = (id: string) => {
         setTeam(team.filter(m => m.id !== id));
+    };
+
+    const handleAcceptInvite = (inviteId: string, inviteFrom: { name: string; role: string; skills: string[]; style: string; avatar?: string }) => {
+        acceptTeamInvite(inviteId);
+        // Add to local team
+        setTeam(prev => [...prev, {
+            id: `invited-${Date.now()}`,
+            name: inviteFrom.name,
+            role: inviteFrom.role,
+            style: inviteFrom.style,
+            skills: inviteFrom.skills.slice(0, 2),
+            avatar: inviteFrom.avatar || inviteFrom.name[0],
+        }]);
     };
 
     return (
@@ -65,6 +69,54 @@ export default function TeamPage() {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
                 {/* Team Roster */}
                 <div className="lg:col-span-8 space-y-8">
+                    {/* Pending Team Invites */}
+                    {pendingTeamInvites.length > 0 && (
+                        <Card className="glass-premium border-primary/20 p-6 rounded-[2.5rem] relative overflow-hidden">
+                            <div className="absolute -top-20 -right-20 w-40 h-40 bg-primary/10 rounded-full blur-3xl" />
+                            <h3 className="text-xs font-black uppercase tracking-[0.2em] text-primary mb-4 flex items-center gap-2">
+                                <UserPlus className="w-4 h-4" />
+                                Pending Invites ({pendingTeamInvites.length})
+                            </h3>
+                            <div className="space-y-3">
+                                {pendingTeamInvites.map((invite) => (
+                                    <motion.div
+                                        key={invite.id}
+                                        initial={{ opacity: 0, x: -20 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        className="flex items-center justify-between p-4 rounded-2xl bg-white/[0.02] border border-white/5 hover:border-primary/30 transition-all group"
+                                    >
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-indigo-500/20 flex items-center justify-center text-lg font-black border border-white/10 group-hover:border-primary/40 transition-all">
+                                                {invite.from.avatar}
+                                            </div>
+                                            <div>
+                                                <h4 className="font-black text-sm text-white">{invite.from.name}</h4>
+                                                <p className="text-[10px] text-white/30 font-mono uppercase">{invite.from.role} • Wants to join {invite.teamName}</p>
+                                            </div>
+                                        </div>
+                                        <div className="flex gap-2">
+                                            <Button
+                                                onClick={() => rejectTeamInvite(invite.id)}
+                                                variant="ghost"
+                                                size="sm"
+                                                className="h-10 px-4 rounded-xl border border-white/10 hover:bg-red-500/10 hover:border-red-500/30 hover:text-red-400 active:scale-95 transition-all"
+                                            >
+                                                <XCircle className="w-4 h-4 mr-1" /> Reject
+                                            </Button>
+                                            <Button
+                                                onClick={() => handleAcceptInvite(invite.id, invite.from)}
+                                                size="sm"
+                                                className="h-10 px-5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold active:scale-95 transition-all shadow-lg shadow-emerald-500/20"
+                                            >
+                                                <Check className="w-4 h-4 mr-1" /> Accept
+                                            </Button>
+                                        </div>
+                                    </motion.div>
+                                ))}
+                            </div>
+                        </Card>
+                    )}
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {team.map((member) => (
                             <motion.div
@@ -105,6 +157,7 @@ export default function TeamPage() {
 
                         <Button
                             variant="ghost"
+                            onClick={toggleFriendsPanel}
                             className="h-full min-h-[160px] w-full rounded-3xl border-2 border-dashed border-white/5 hover:border-primary/40 hover:bg-primary/5 transition-all flex flex-col items-center justify-center gap-4 group active:scale-[0.98] hover:scale-[1.01]"
                         >
                             <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center border border-white/10 group-hover:border-primary/40 group-hover:scale-110 transition-all">
@@ -224,22 +277,28 @@ export default function TeamPage() {
                         </div>
                     </Card>
 
+                    {/* Live Activity Feed */}
                     <Card className="glass-premium border-white/5 p-8 rounded-[2.5rem] bg-indigo-500/5">
-                        <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-400 mb-6 flex items-center gap-3">
-                            <MessageSquare className="w-4 h-4" /> Global Transmissions
-                        </CardTitle>
-                        <div className="space-y-6">
-                            {[1, 2].map(i => (
-                                <div key={i} className="flex gap-4">
-                                    <div className="w-8 h-8 rounded-full bg-white/10 border border-white/10 shrink-0" />
-                                    <div className="space-y-1">
-                                        <div className="text-[10px] font-bold text-white/60">System Channel</div>
-                                        <p className="text-xs text-white/40 leading-relaxed font-medium italic">"Squad synchronized. Waiting for architect approval."</p>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
+                        <ActivityFeed maxItems={5} />
                     </Card>
+
+                    {/* Quick Actions */}
+                    <div className="flex gap-3">
+                        <Button
+                            onClick={toggleChat}
+                            variant="ghost"
+                            className="flex-1 h-14 rounded-2xl border border-white/5 hover:border-primary/30 hover:bg-primary/5 gap-2 text-[10px] font-black uppercase tracking-widest text-white/40 hover:text-primary transition-all active:scale-95"
+                        >
+                            <MessageSquare className="w-4 h-4" /> Team Chat
+                        </Button>
+                        <Button
+                            onClick={toggleFriendsPanel}
+                            variant="ghost"
+                            className="flex-1 h-14 rounded-2xl border border-white/5 hover:border-emerald-500/30 hover:bg-emerald-500/5 gap-2 text-[10px] font-black uppercase tracking-widest text-white/40 hover:text-emerald-400 transition-all active:scale-95"
+                        >
+                            <UserPlus className="w-4 h-4" /> Invite
+                        </Button>
+                    </div>
                 </div>
             </div>
         </div>

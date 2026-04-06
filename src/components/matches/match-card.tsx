@@ -1,15 +1,36 @@
+"use client";
+
 import { useEffect, useState } from "react";
-import { motion, useSpring, useTransform, animate } from "framer-motion";
+import { motion, animate } from "framer-motion";
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, ResponsiveContainer } from "recharts";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Terminal as GithubIcon, Send, Zap, Activity, Sparkles, Brain } from "lucide-react";
+import { Terminal as GithubIcon, Send, Zap, Activity, Sparkles, Brain, UserPlus, Check, Users } from "lucide-react";
 import { MatchResult } from "@/lib/utils/matching";
+import { useSocial } from "@/components/providers/social-context";
 import Tilt from "react-parallax-tilt";
 
 export function MatchCard({ match }: { match: MatchResult }) {
     const [count, setCount] = useState(0);
+    const [friendSent, setFriendSent] = useState(false);
+    const [inviteSent, setInviteSent] = useState(false);
+
+    const { sendFriendRequest, sendTeamInvite, isFriend, hasPendingRequest } = useSocial();
+
+    const userAsSocial = {
+        id: `user-match-${match.user.github}`,
+        name: match.user.name,
+        github: match.user.github,
+        role: match.user.role,
+        skills: match.user.skills,
+        style: match.user.style,
+        avatar: match.user.name[0],
+        isOnline: Math.random() > 0.4, // random online status for demo
+    };
+
+    const alreadyFriend = isFriend(userAsSocial.id);
+    const pendingReq = hasPendingRequest(userAsSocial.id);
 
     useEffect(() => {
         const controls = animate(0, match.score, {
@@ -33,6 +54,16 @@ export function MatchCard({ match }: { match: MatchResult }) {
         "Designer": "bg-pink-500/20 text-pink-400 border-pink-500/30",
         "Thinker": "bg-purple-500/20 text-purple-400 border-purple-500/30",
         "Hustler": "bg-orange-500/20 text-orange-400 border-orange-500/30"
+    };
+
+    const handleAddFriend = () => {
+        sendFriendRequest(userAsSocial);
+        setFriendSent(true);
+    };
+
+    const handleInviteTeam = () => {
+        sendTeamInvite(userAsSocial);
+        setInviteSent(true);
     };
 
     return (
@@ -133,16 +164,41 @@ export function MatchCard({ match }: { match: MatchResult }) {
                             </div>
                         </div>
 
-                        <a
-                            href={`https://github.com/${match.user.github}`}
-                            target="_blank"
-                            className="block w-full pt-4"
-                        >
-                            <Button className="w-full h-14 bg-primary hover:bg-white hover:text-black rounded-2xl gap-3 shadow-2xl shadow-primary/20 transition-all active:scale-95 font-black uppercase text-xs tracking-widest group/btn">
-                                <Send className="w-4 h-4 group-hover/btn:translate-x-1 group-hover/btn:-translate-y-1 transition-transform" />
-                                Forge Connection
+                        {/* Social Action Buttons */}
+                        <div className="flex gap-3 pt-2">
+                            <Button
+                                onClick={handleAddFriend}
+                                disabled={friendSent || alreadyFriend || pendingReq}
+                                className={`flex-1 h-14 rounded-2xl gap-2 font-black uppercase text-xs tracking-widest transition-all active:scale-95 ${friendSent || alreadyFriend
+                                        ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/30"
+                                        : "bg-primary hover:bg-white hover:text-black shadow-2xl shadow-primary/20"
+                                    }`}
+                            >
+                                {friendSent || alreadyFriend ? (
+                                    <>
+                                        <Check className="w-4 h-4" />
+                                        {alreadyFriend ? "Friends" : "Sent!"}
+                                    </>
+                                ) : (
+                                    <>
+                                        <UserPlus className="w-4 h-4" />
+                                        Add Friend
+                                    </>
+                                )}
                             </Button>
-                        </a>
+                            <Button
+                                onClick={handleInviteTeam}
+                                disabled={inviteSent}
+                                variant="ghost"
+                                className={`h-14 px-5 rounded-2xl gap-2 font-black uppercase text-[10px] tracking-widest border transition-all active:scale-95 ${inviteSent
+                                        ? "border-emerald-500/30 text-emerald-400 bg-emerald-500/10"
+                                        : "border-white/10 hover:bg-white/10 hover:border-primary/30"
+                                    }`}
+                            >
+                                {inviteSent ? <Check className="w-4 h-4" /> : <Users className="w-4 h-4" />}
+                                {inviteSent ? "Invited" : "Invite"}
+                            </Button>
+                        </div>
                     </CardContent>
                 </Card>
             </Tilt>
