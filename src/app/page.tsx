@@ -4,15 +4,18 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
+import { Canvas } from "@react-three/fiber";
 import Hero3D from "@/components/ui/3d/hero-3d";
+import Galaxy from "@/components/ui/3d/galaxy";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ArrowRight, Zap, Shield, Users, Code, Sparkles, Terminal } from "lucide-react";
+import { ArrowRight, Zap, Shield, Users, Code, Sparkles, Terminal, Globe } from "lucide-react";
 
 export default function Home() {
   const [demoUrl, setDemoUrl] = useState("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisStep, setAnalysisStep] = useState(0);
+  const [isDiving, setIsDiving] = useState(false);
   const router = useRouter();
 
   const loadingSteps = [
@@ -226,6 +229,58 @@ export default function Home() {
                 {feature.desc}
               </p>
             </motion.div>
+          ))}
+        </div>
+      </section>
+
+      {/* Galaxy Ecosystem Section */}
+      <section className="relative min-h-[80vh] flex flex-col items-center justify-center overflow-hidden bg-black py-20">
+        <div className="absolute inset-0 z-0">
+          <Canvas camera={{ position: [0, 0, 15], fov: 60 }}>
+            <Galaxy isDiving={isDiving} onDive={() => setIsDiving(true)} />
+            <ambientLight intensity={0.5} />
+          </Canvas>
+        </div>
+
+        <div className="relative z-10 text-center space-y-8 select-none pointer-events-none">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="space-y-4"
+          >
+            <div className="flex items-center justify-center gap-2 mb-4">
+              <div className="px-4 py-1 rounded-full bg-primary/10 border border-primary/20 backdrop-blur-md">
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">Live Ecosystem</span>
+              </div>
+            </div>
+            <h2 className="text-5xl md:text-7xl font-black tracking-tight leading-none bg-gradient-to-b from-white via-white to-white/40 bg-clip-text text-transparent">
+              EXPLORE THE<br />
+              <span className="text-glow">GALAXY</span>
+            </h2>
+          </motion.div>
+
+          <div className="pt-10 pointer-events-auto">
+            <Button
+              onClick={() => setIsDiving(!isDiving)}
+              className={`h-16 px-10 rounded-full text-xs font-black uppercase tracking-[0.3em] transition-all duration-700 ${isDiving ? 'bg-primary shadow-glow scale-110' : 'glass-premium hover:bg-white/10'}`}
+            >
+              {isDiving ? 'WARP DRIVE ACTIVE' : 'PLAY WITH GALAXY'}
+            </Button>
+          </div>
+        </div>
+
+        {/* Floating Stats */}
+        <div className="absolute bottom-10 left-0 right-0 z-10 px-10 flex flex-wrap justify-center gap-12 opacity-50 pointer-events-none">
+          {[
+            { label: "NODES", val: "1.2k+" },
+            { label: "TRANSFERS", val: "450/min" },
+            { label: "LATENCY", val: "14ms" }
+          ].map((stat, i) => (
+            <div key={i} className="flex flex-col items-center gap-1">
+              <span className="text-2xl font-black tracking-tighter text-white">{stat.val}</span>
+              <span className="text-[8px] uppercase tracking-[0.2em] text-muted-foreground">{stat.label}</span>
+            </div>
           ))}
         </div>
       </section>
