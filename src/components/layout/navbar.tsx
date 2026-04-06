@@ -8,11 +8,11 @@ import { Terminal as GithubIcon, Users, Zap, LayoutDashboard, Sparkles, ShieldCh
 export function Navbar() {
     return (
         <motion.header
-            initial={{ y: -100, opacity: 0 }}
+            initial={{ y: -20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            className="fixed top-0 left-0 right-0 z-50 flex justify-center p-6 bg-transparent"
+            className="fixed top-0 left-0 right-0 z-[200] flex justify-center p-6 bg-transparent pointer-events-none"
         >
-            <nav className="glass px-8 py-3.5 rounded-full flex items-center justify-between w-full max-w-7xl animate-in fade-in slide-in-from-top-4 duration-1000 border-white/5 shimmer-border">
+            <nav className="glass px-8 py-3.5 rounded-full flex items-center justify-between w-full max-w-7xl animate-in fade-in slide-in-from-top-4 duration-1000 border-white/5 relative pointer-events-auto shadow-2xl">
                 <Link href="/" className="flex items-center gap-2 group relative z-10">
                     <div className="w-10 h-10 bg-primary/20 rounded-xl flex items-center justify-center border border-primary/40 group-hover:bg-primary/30 transition-all shadow-glow">
                         <Zap className="w-6 h-6 text-primary fill-primary/20" />
@@ -48,7 +48,7 @@ export function Navbar() {
                     >
                         <Sparkles className="w-3.5 h-3.5 animate-pulse" />
                         Boost Workflow
-                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full animate-shimmer" />
+                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full animate-shimmer pointer-events-none" />
                     </a>
                     <Link href="/dashboard">
                         <Button variant="ghost" className="hover:bg-white/5 text-xs font-black uppercase tracking-widest px-6 h-10 rounded-full active:scale-95 transition-all">Sign In</Button>
